@@ -71,10 +71,10 @@ app.post('/api/notes', (request, response) => {
   response.json(note)
 })
 
-// ⭐ CATCH-ALL ROUTE — MUST BE ABOVE unknownEndpoint
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'))
-})
+// // ⭐ CATCH-ALL ROUTE — MUST BE ABOVE unknownEndpoint
+// app.get('*', (req, res) => {
+//   res.sendFile(path.resolve(__dirname, 'dist', 'index.html'))
+// })
 
 // Unknown endpoint ONLY for API
 const unknownEndpoint = (request, response) => {
