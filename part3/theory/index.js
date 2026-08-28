@@ -110,6 +110,13 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
+const path = require('path')
+
+// Serve React for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'))
+})
+
 app.use(unknownEndpoint)
 
 
