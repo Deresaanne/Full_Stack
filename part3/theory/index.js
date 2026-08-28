@@ -113,9 +113,10 @@ const unknownEndpoint = (request, response) => {
 const path = require('path')
 
 // Serve React for all non-API routes
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'dist', 'index.html'))
 })
+
 
 app.use(unknownEndpoint)
 
