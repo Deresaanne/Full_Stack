@@ -31,7 +31,6 @@ app.use(requestLogger)
 app.use(express.static('dist'))
 app.use(express.json())
 
-
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
@@ -85,13 +84,7 @@ app.delete('/api/notes/:id', (request, response) => {
 })
 
 const unknownEndpoint = (request, response) => {
-  // For SPA routing: serve index.html for routes without file extensions
-  // If the path has a dot (like .js, .css), it's a file request, so 404
-  if (!request.path.startsWith('/api') && !request.path.includes('.')) {
-    response.sendFile(__dirname + '/dist/index.html')
-  } else {
-    response.status(404).send({ error: 'unknown endpoint' })
-  }
+  response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
