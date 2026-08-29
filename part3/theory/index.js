@@ -85,8 +85,9 @@ app.delete('/api/notes/:id', (request, response) => {
 })
 
 const unknownEndpoint = (request, response) => {
-  // For SPA routing, serve index.html for all non-API routes
-  if (!request.path.startsWith('/api')) {
+  // For SPA routing: serve index.html for routes without file extensions
+  // If the path has a dot (like .js, .css), it's a file request, so 404
+  if (!request.path.startsWith('/api') && !request.path.includes('.')) {
     response.sendFile(__dirname + '/dist/index.html')
   } else {
     response.status(404).send({ error: 'unknown endpoint' })
