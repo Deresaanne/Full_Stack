@@ -339,6 +339,14 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
 
+    if (!newName.trim() || !newNumber.trim()) {
+      setSuccessMessage('Error: Name and number cannot be empty')
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 3000)
+      return
+    }
+
     const existingPerson = persons.find(person => person.name.toLowerCase() === newName.toLowerCase())
 
     const personObject = {
@@ -377,6 +385,13 @@ const App = () => {
       setSuccessMessage(
         `Successfully added ${newName} to phonebook`
       )
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 5000)
+    })
+    .catch(error => {
+      console.error('failed to add person', error)
+      setSuccessMessage(`Error: Failed to add ${newName}`)
       setTimeout(() => {
         setSuccessMessage(null)
       }, 5000)

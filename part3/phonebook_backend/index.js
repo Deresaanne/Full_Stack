@@ -1,6 +1,9 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
+
+app.use(cors())
 app.use(express.json())
 
 // Add a token that prints the body ONLY for POST requests

@@ -85,7 +85,12 @@ app.delete('/api/notes/:id', (request, response) => {
 })
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
+  // For SPA routing, serve index.html for all non-API routes
+  if (!request.path.startsWith('/api')) {
+    response.sendFile(__dirname + '/dist/index.html')
+  } else {
+    response.status(404).send({ error: 'unknown endpoint' })
+  }
 }
 
 app.use(unknownEndpoint)
