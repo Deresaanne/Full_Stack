@@ -1,5 +1,32 @@
+// const mongoose = require('mongoose')
+
+// // DO NOT SAVE YOUR PASSWORD TO GITHUB!!
+// const password = process.argv[2]
+// console.log('password:', password)
+// const url = `mongodb+srv://Deresaanne:${password}@cluster0.nbsij7j.mongodb.net/noteApp?appName=Cluster0`
+
+// mongoose.set('strictQuery',false)
+// mongoose.connect(url, { family: 4 })
+
+// const noteSchema = new mongoose.Schema({
+//   content: String,
+//   important: Boolean,
+// })
+
+// const Note = mongoose.model('Note', noteSchema)
+
+// noteSchema.set('toJSON', {
+//   transform: (document, returnedObject) => {
+//     returnedObject.id = returnedObject._id.toString()
+//     delete returnedObject._id
+//     delete returnedObject.__v
+//   }
+// })
+
+require('dotenv').config()
 const express = require('express')
 const app = express()
+const Note = require('./models/note')
 
 let notes = [
   {
@@ -19,24 +46,20 @@ let notes = [
   },
 ]
 
-const requestLogger = (request, response, next) => {
-  console.log('Method:', request.method)
-  console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
-  console.log('---')
-  next()
-}
-
-app.use(requestLogger)
-app.use(express.static('dist'))
 app.use(express.json())
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
+// app.get('/api/notes', (request, response) => {
+//   response.json(notes)
+// })
+
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
+  Note.find({}).then(notes => {
+    response.json(notes)
+  })
 })
 
 app.get('/api/notes/:id', (request, response) => {
@@ -83,13 +106,7 @@ app.delete('/api/notes/:id', (request, response) => {
   response.status(204).end()
 })
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
-
-app.use(unknownEndpoint)
-
-const PORT = process.env.PORT || 3001
+const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
