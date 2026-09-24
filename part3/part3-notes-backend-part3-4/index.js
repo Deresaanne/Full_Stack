@@ -1,9 +1,11 @@
 require('dotenv').config()
-const path = require('path')
 const express = require('express')
+const cors = require('cors')
 const Note = require('./models/note')
 
 const app = express()
+
+let notes = []
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -14,6 +16,7 @@ const requestLogger = (request, response, next) => {
 }
 
 app.use(requestLogger)
+app.use(cors())
 app.use(express.static('dist'))
 app.use(express.json())
 
@@ -27,16 +30,10 @@ app.get('/api/notes', (request, response) => {
   })
 })
 
-app.get('/api/notes/:id', (request, response, next) => {
-  Note.findById(request.params.id)
-    .then((note) => {
-      if (note) {
-        response.json(note)
-      } else {
-        response.status(404).end()
-      }
-    })
-    .catch(next)
+app.get('/api/notes/:id', (request, response) => {
+  Note.findById(request.params.id).then((note) => {
+    response.json(note)
+  })
 })
 
 app.post('/api/notes', (request, response) => {
@@ -52,56 +49,15 @@ app.post('/api/notes', (request, response) => {
   })
 
   note.save().then((savedNote) => {
-    response.status(201).json(savedNote)
+    response.json(savedNote)
   })
 })
 
-app.put('/api/notes/:id', (request, response, next) => {
-  const { content, important } = request.body
+app.delete('/api/notes/:id', (request, response) => {
+  const id = request.params.id
+  notes = notes.filter((note) => note.id !== id)
 
-  Note.findByIdAndUpdate(
-    request.params.id,
-    { content, important },
-    { new: true, runValidators: true, context: 'query' }
-  )
-    .then((updatedNote) => {
-      if (updatedNote) {
-        response.json(updatedNote)
-      } else {
-        response.status(404).end()
-      }
-    })
-    .catch(next)
-})
-
-app.delete('/api/notes/:id', (request, response, next) => {
-  Note.findByIdAndDelete(request.params.id)
-    .then((deletedNote) => {
-      if (deletedNote) {
-        response.status(204).end()
-      } else {
-        response.status(404).end()
-      }
-    })
-    .catch(next)
-})
-
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
-
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
-  }
-
-  next(error)
-}
-
-app.use((request, response, next) => {
-  if (request.method === 'GET' && !request.path.startsWith('/api/')) {
-    return response.sendFile(path.join(__dirname, 'dist', 'index.html'))
-  }
-
-  next()
+  response.status(204).end()
 })
 
 const unknownEndpoint = (request, response) => {
@@ -109,9 +65,8 @@ const unknownEndpoint = (request, response) => {
 }
 
 app.use(unknownEndpoint)
-app.use(errorHandler)
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
