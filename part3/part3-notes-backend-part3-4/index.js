@@ -4,8 +4,6 @@ const Note = require('./models/note')
 
 const app = express()
 
-let notes = []
-
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
   console.log('Path:  ', request.path)
@@ -28,10 +26,16 @@ app.get('/api/notes', (request, response) => {
   })
 })
 
-app.get('/api/notes/:id', (request, response) => {
-  Note.findById(request.params.id).then((note) => {
-    response.json(note)
-  })
+app.get('/api/notes/:id', (request, response, next) => {
+  Note.findById(request.params.id)
+    .then((note) => {
+      if (note) {
+        response.json(note)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(next)
 })
 
 app.post('/api/notes', (request, response) => {
@@ -47,22 +51,56 @@ app.post('/api/notes', (request, response) => {
   })
 
   note.save().then((savedNote) => {
-    response.json(savedNote)
+    response.status(201).json(savedNote)
   })
 })
 
-app.delete('/api/notes/:id', (request, response) => {
-  const id = request.params.id
-  notes = notes.filter((note) => note.id !== id)
+app.put('/api/notes/:id', (request, response, next) => {
+  const { content, important } = request.body
 
-  response.status(204).end()
+  Note.findByIdAndUpdate(
+    request.params.id,
+    { content, important },
+    { new: true, runValidators: true, context: 'query' }
+  )
+    .then((updatedNote) => {
+      if (updatedNote) {
+        response.json(updatedNote)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(next)
 })
+
+app.delete('/api/notes/:id', (request, response, next) => {
+  Note.findByIdAndDelete(request.params.id)
+    .then((deletedNote) => {
+      if (deletedNote) {
+        response.status(204).end()
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(next)
+})
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
