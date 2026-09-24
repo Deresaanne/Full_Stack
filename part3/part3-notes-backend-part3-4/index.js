@@ -1,4 +1,5 @@
 require('dotenv').config()
+const path = require('path')
 const express = require('express')
 const Note = require('./models/note')
 
@@ -95,6 +96,14 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
+app.use((request, response, next) => {
+  if (request.method === 'GET' && !request.path.startsWith('/api/')) {
+    return response.sendFile(path.join(__dirname, 'dist', 'index.html'))
+  }
+
+  next()
+})
+
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
@@ -102,7 +111,7 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 app.use(errorHandler)
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
